@@ -1,0 +1,65 @@
+{
+  "variables": {
+    "vcenter_server": "",
+    "vsphere_user": "",
+    "vsphere_password": "",
+    "vcenter_datacenter": "Datacenter Name",
+    "vcenter_cluster": "Cluster Name",
+    "vcenter_resource_pool": "Sandbox",
+    "vcenter_network": "Network name",
+    "vcenter_datastore": "Shared Storage 01",
+    "vcenter_folder": "Sandbox",
+    "os_iso": "",
+    "kickstart_file": "c7-ks.cfg",
+    "vm_name": "",
+    "vm_ssh_password": "centos7_64Guest"
+  },
+
+  "builders": [
+    {
+      "type": "vsphere-iso",
+      "vcenter_server": "{{user `vcenter_server`}}",
+      "username": "{{user `vsphere_user`}}",
+      "password": "{{user `vsphere_password`}}",
+      "insecure_connection": "true",
+      "datacenter": "{{user `vcenter_datacenter`}}",
+      "cluster": "{{user `vcenter_cluster`}}",
+      "resource_pool": "{{user `vcenter_resource_pool`}}",
+      "network": "{{user `vcenter_network`}}",
+      "datastore": "{{user `vcenter_datastore`}}",
+      "folder": "{{user `vcenter_folder`}}",
+      "vm_version": "15",
+      "communicator":"ssh",
+      "ssh_username": "root",
+      "ssh_password": "{{user `vm_ssh_password`}}",
+      "ssh_port": 22,
+      "ssh_timeout" : "60m",
+      "vm_name": "{{user `vm_name`}}",
+      "guest_os_type": "centos7_64Guest",
+      "firmware": "efi",
+      "CPUs": "2",
+      "RAM": "4096",
+      "RAM_reserve_all": true,
+      "disk_controller_type": "lsilogic-sas",
+      "disk_size": "130048",
+      "disk_thin_provisioned": true,
+      "network_card": "vmxnet3",
+      "boot_wait": "5s",
+      "boot_command": [
+        "c  setparams 'kickstart' <enter> linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS\\x207\\x20x\\86_64 inst.ks=hd:fd0:/{{user `kickstart_file`}}<enter> initrdefi /images/pxeboot/initrd.img<enter> boot<enter>"
+      ],
+      "shutdown_command": "/sbin/halt -h -p",
+      "iso_paths": [
+        "{{user `os_iso`}}",
+        "[] /vmimages/tools-isoimages/linux.iso"
+      ],
+      "floppy_files": [
+        "{{template_dir}}/{{user `kickstart_file`}}"
+      ]
+    }
+  ],
+  "export": {
+    "force": true,
+    "output_directory": "./output_vsphere"
+  }
+}
